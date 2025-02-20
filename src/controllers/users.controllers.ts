@@ -13,6 +13,7 @@ import {
   ForgotPasswordReqBody,
   LoginReqBody,
   LogoutReqBody,
+  RefreshTokenReqBody,
   RegisterReqBody,
   ResetPasswordReqBody,
   TokenPayload,
@@ -118,7 +119,10 @@ export const forgotPasswordController = async (
   next: NextFunction
 ) => {
   const { _id, verify } = req.user as User
-  const result = await userService.forgotPassword({ user_id: (_id as ObjectId).toString(), verify })
+  const result = await userService.forgotPassword({
+    user_id: (_id as ObjectId).toString(),
+    verify: UserVerifyStatus.Unverified
+  })
   return res.json(result)
 }
 
@@ -199,4 +203,17 @@ export const changePasswordController = async (
   const { password } = req.body
   const result = await userService.changePassword(user_id, password)
   return res.json(result)
+}
+
+export const refreshTokenController = async (
+  req: Request<ParamsDictionary, any, RefreshTokenReqBody>,
+  res: Response
+) => {
+  const { refresh_token } = req.body
+  const { user_id, verify } = req.decoded_refresh_token as TokenPayload
+  const result = await userService.refreshToken({ user_id, verify, refresh_token })
+  return res.json({
+    message: USERS_MESSAGES.REFRESH_TOKEN_SUCCESS,
+    result
+  })
 }
