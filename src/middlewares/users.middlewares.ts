@@ -428,7 +428,7 @@ export const verifiedUserValidator = (req: Request, res: Response, next: NextFun
     return next(
       new ErrorWithStatus({
         message: USERS_MESSAGES.USER_NOT_VERIFIED,
-        status: HTTP_STATUS.FORBIDDEN
+        status: HTTP_STATUS.UNAUTHORIZED
       })
     )
   }

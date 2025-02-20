@@ -186,7 +186,6 @@ class UsersService {
         }
       }
     ])
-    console.log(forgot_password_token)
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }
