@@ -1,6 +1,7 @@
 import { Request } from 'express'
 import { File } from 'formidable'
 import fs from 'fs'
+import path from 'path'
 import { UPLOAD_IMAGE_TEMP_DIR, UPLOAD_VIDEO_DIR, UPLOAD_VIDEO_TEMP_DIR } from '~/constants/dir'
 
 export const initFolder = () => {
@@ -43,10 +44,22 @@ export const handleUpLoadImage = async (req: Request) => {
   })
 }
 
+//Cách 1 : tạo unique id cho video ngay từ đầu
+//Cách 2 : Đợi video upload xong rồi tạo folder, move video vào
+
+//Cách xử lý khi upload video và encode
+//Có 2 giai đoạn
+//Upload video: Upload video thành công thì resolve về cho người dùng
+//Encode video: Khi báo thêm 1 url endpint để check xem cái video đó đã encode xong chưa
+
 export const handleUpLoadVideo = async (req: Request) => {
   const formidable = (await import('formidable')).default
+  const nanoId = (await import('nanoid')).nanoid
+  const idName = nanoId()
+  const folderPath = path.resolve(UPLOAD_VIDEO_DIR, idName)
+  fs.mkdirSync(folderPath)
   const form = formidable({
-    uploadDir: UPLOAD_VIDEO_DIR,
+    uploadDir: folderPath,
     maxFiles: 1,
     maxFileSize: 50 * 1024 * 1024, //50MB
     filter: function ({ name, originalFilename, mimetype }) {
@@ -55,6 +68,9 @@ export const handleUpLoadVideo = async (req: Request) => {
         form.emit('error' as any, new Error('File type is not valid') as any)
       }
       return valid
+    },
+    filename: function () {
+      return idName
     }
   })
   return new Promise<File[]>((resolve, reject) => {

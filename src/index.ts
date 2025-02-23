@@ -7,6 +7,9 @@ import mediasRouter from './routes/medias.routes'
 import staticRouter from './routes/static.routes'
 import usersRouter from './routes/users.routes'
 import { initFolder } from './utils/file'
+import tweetsRouter from './routes/tweets.routes'
+import bookmarksRouter from './routes/bookmarks.routes'
+import likesRouter from './routes/likes.routes'
 config()
 
 const app = express()
@@ -14,6 +17,9 @@ app.use(express.json())
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)
+app.use('/tweets', tweetsRouter)
+app.use('/likes', likesRouter)
+app.use('/bookmarks', bookmarksRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 const port = process.env.PORT || 4000
 // const options = argv(process.argv.slice(2))
