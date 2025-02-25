@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
-import User from '~/models/schemas/User.schema'
-import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import Follower from '~/models/schemas/Follower.schema'
-import Tweet from '~/models/schemas/Tweet.schema'
-import Hashtag from '~/models/schemas/Hashtag.schema'
+import { Collection, Db, MongoClient } from 'mongodb'
 import Bookmark from '~/models/schemas/Bookmark.schema'
+import Follower from '~/models/schemas/Follower.schema'
+import Hashtag from '~/models/schemas/Hashtag.schema'
 import Like from '~/models/schemas/Like.schema'
+import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import Tweet from '~/models/schemas/Tweet.schema'
+import User from '~/models/schemas/User.schema'
 
 dotenv.config()
 //muốn lấy được env cài npm i dotenv
@@ -30,6 +30,14 @@ class DatabaseService {
       throw err
     }
   }
+
+  async indexTweets() {
+    const exists = await this.tweets.indexExists(['content_text'])
+    if (!exists) {
+      this.tweets.createIndex({ content: 'text' }, { default_language: 'none' })
+    }
+  }
+
   get users(): Collection<User> {
     //users is name database
     //as string for sure is a string

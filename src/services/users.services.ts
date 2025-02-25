@@ -1,16 +1,17 @@
+import axios from 'axios'
 import { ObjectId } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
+import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
+import { ErrorWithStatus } from '~/models/Errors'
 import { RegisterReqBody, UpdateMeReqBody } from '~/models/Request/User.requests'
+import Follower from '~/models/schemas/Follower.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import User from '~/models/schemas/User.schema'
 import { hashPassword } from '~/utils/crypto'
+import { sendForgotPasswordEmail, sendVerifyEmail, sendVerifyRegisterEmail } from '~/utils/email'
 import { signToken } from '~/utils/jwt'
 import databaseService from './database.services'
-import { ErrorWithStatus } from '~/models/Errors'
-import HTTP_STATUS from '~/constants/httpStatus'
-import Follower from '~/models/schemas/Follower.schema'
-import axios from 'axios'
 
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -99,6 +100,15 @@ class UsersService {
         token: refresh_token
       })
     )
+
+    // Flow verify email
+    // 1. Server send email to user
+    // 2. User click link in email
+    // 3. Client send request to server with email_verify_token
+    // 4. Server verify email_verify_token
+    // 5. Client receive access_token and refresh_token
+    await sendVerifyRegisterEmail(payload.email, email_verify_token)
+
     return {
       user_id,
       access_token,
@@ -157,8 +167,10 @@ class UsersService {
     }
   }
 
-  async resendVerifyEmail(user_id: string) {
+  async resendVerifyEmail(user_id: string, email: string) {
     const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: UserVerifyStatus.Verified })
+    await sendVerifyRegisterEmail(email, email_verify_token)
+
     await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
       {
@@ -176,8 +188,19 @@ class UsersService {
     }
   }
 
-  async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus.Unverified }) {
+  async forgotPassword({
+    user_id,
+    verify,
+    email
+  }: {
+    user_id: string
+    verify: UserVerifyStatus.Unverified
+    email: string
+  }) {
     const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
+
+    await sendForgotPasswordEmail(email, forgot_password_token)
+
     await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
       {
         $set: {

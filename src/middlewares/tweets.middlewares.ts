@@ -38,7 +38,7 @@ export const createTweetValidator = validate(
             throw new Error(TWEETS_MESSAGES.PARENT_ID_MUST_BE_A_VALID_TWEET_ID)
           }
           // nếu `type` là tweet thì `parent_id` phải là `null`
-          if (type === TweetType.Tweet && value !== null) {
+          if (type === TweetType.Tweet && value === null) {
             throw new Error(TWEETS_MESSAGES.PARENT_ID_MUST_BE_NULL)
           }
           return true
@@ -288,3 +288,49 @@ export const audienceValidator = wrapRequestHandler(async (req: Request, res: Re
   }
   next()
 })
+
+export const getTweetChildrenValidator = validate(
+  checkSchema(
+    {
+      tweet_type: {
+        isIn: {
+          options: [tweetTypes],
+          errorMessage: TWEETS_MESSAGES.INVALID_TYPE
+        }
+      }
+    },
+    ['query']
+  )
+)
+
+export const paginationValidator = validate(
+  checkSchema(
+    {
+      limit: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const num = Number(value)
+            if (num > 100 || num < 1) {
+              throw new Error('1 <= limit <= 100')
+            }
+            return true
+          }
+        }
+      },
+      page: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const num = Number(value)
+            if (num < 1) {
+              throw new Error('page >= 1')
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['query']
+  )
+)

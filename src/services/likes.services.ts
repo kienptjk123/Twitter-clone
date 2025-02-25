@@ -1,6 +1,6 @@
 import { ObjectId, WithId } from 'mongodb'
-import databaseService from './database.services'
 import Like from '~/models/schemas/Like.schema'
+import databaseService from './database.services'
 
 class LikeService {
   async likeTweet(user_id: string, tweet_id: string) {

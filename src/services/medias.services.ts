@@ -1,15 +1,15 @@
+import { config } from 'dotenv'
 import { Request } from 'express'
+import fs from 'fs'
+import fsPromise from 'fs/promises'
 import path from 'path'
 import sharp from 'sharp'
-import { UPLOAD_IMAGE_DIR } from '~/constants/dir'
-import fs from 'fs'
-import { getNameFromFullname, handleUpLoadImage, handleUpLoadVideo } from '~/utils/file'
 import { isProduction } from '~/constants/config'
-import { config } from 'dotenv'
+import { UPLOAD_IMAGE_DIR } from '~/constants/dir'
 import { MediaType } from '~/constants/enum'
 import { Media } from '~/models/Other'
+import { getNameFromFullname, handleUpLoadImage, handleUpLoadVideo } from '~/utils/file'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/video'
-import fsPromise from 'fs/promises'
 config()
 class MediasService {
   async uploadImage(req: Request) {
